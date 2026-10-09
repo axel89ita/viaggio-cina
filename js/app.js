@@ -114,7 +114,10 @@ function schermoIntero(html) {
 }
 /** Ingrandisce il testo cinese il più possibile senza farlo uscire dallo schermo */
 function adatta() {
-  const c = $("#si-centro"), oriz = $("#schermo-intero").classList.contains("orizzontale");
+  const si = $("#schermo-intero");
+  const telefonoDiLato = innerWidth > innerHeight;          // telefono girato fisicamente
+  si.classList.toggle("di-lato", telefonoDiLato);
+  const c = $("#si-centro"), oriz = telefonoDiLato || si.classList.contains("orizzontale");
   const grandi = c.querySelectorAll(".grande-cn"), medi = c.querySelectorAll(".medio-cn");
   const corto = Math.min(innerWidth, innerHeight);
   let px = oriz ? corto * 0.30 : Math.min(64, innerWidth * 0.11);
