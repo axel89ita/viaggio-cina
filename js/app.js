@@ -816,6 +816,46 @@ function estraiMissioni() {
   S.sfida.usate.push(...scelte);
   return scelte;
 }
+function titoloVincitore(tot) {
+  const [G, F] = CONFIG.GIOCATORI;
+  const pt = (n) => `${n} ${n === 1 ? "punto" : "punti"}`;
+  if (tot[0] === tot[1]) return ["🤝", "Pareggio!", `${pt(tot[0])} a testa: regnate insieme come Coppia Imperiale`];
+  return tot[0] > tot[1] ? ["👑", `Vince ${G}!`, `${pt(tot[0])} contro ${tot[1]}: Imperatore del Viaggio`]
+                         : ["👑", `Vince ${F}!`, `${pt(tot[1])} contro ${tot[0]}: Imperatrice del Viaggio`];
+}
+function svelaVincitore() {
+  const [G, F] = CONFIG.GIOCATORI;
+  const { tot } = punteggi();
+  const f = $("#festa");
+  if (!tot[0] && !tot[1]) { toast("Ancora nessun punto: completate qualche missione prima di svelare il vincitore!"); return; }
+  f.innerHTML = `<div class="t" style="margin-top:20vh">Il vincitore è…</div><div class="conta" id="conta">3</div>`;
+  f.classList.add("aperto");
+  let n = 3;
+  const passo = setInterval(() => {
+    n--;
+    if (n > 0) { $("#conta").textContent = n; $("#conta").style.animation = "none"; void $("#conta").offsetWidth; $("#conta").style.animation = ""; return; }
+    clearInterval(passo);
+    const tit = titoloVincitore(tot);
+    const pari = tot[0] === tot[1];
+    S.sfida.svelato = true; salva();
+    f.innerHTML = `
+      <div class="lanterne">🏮${tit[0]}🏮</div>
+      <div class="t">${esc(tit[1])}</div>
+      <div class="punteggio-finale">
+        <div class="${tot[0] > tot[1] ? "vince" : ""}"><span>${esc(G)}</span><b>${tot[0]}</b></div>
+        <div class="vs">对</div>
+        <div class="${tot[1] > tot[0] ? "vince" : ""}"><span>${esc(F)}</span><b>${tot[1]}</b></div>
+      </div>
+      <div style="text-align:center;opacity:.9">${esc(tit[2])}</div>
+      <div class="voce" style="display:block;text-align:center"><div style="font-size:32px">😈</div>
+        <b>La ricompensa</b><br>${pari ? "Pareggio: ognuno sceglie una penitenza da far fare all'altro! (tipo fare le lavatrici per un mese per entrambi)"
+          : `<b>${esc(tot[0] > tot[1] ? G : F)}</b> sceglie una penitenza da far fare a <b>${esc(tot[0] > tot[1] ? F : G)}</b> (tipo fare le lavatrici per un mese per entrambi)`}</div>
+      <button class="btn chiaro" id="svela-chiudi" style="margin-top:16px">Chiudi</button>`;
+    coriandoli();
+    if (navigator.vibrate) navigator.vibrate([60, 60, 120]);
+    $("#svela-chiudi").onclick = () => { f.classList.remove("aperto"); renderSfida(); };
+  }, 900);
+}
 function renderSfida() {
   const [G, F] = CONFIG.GIOCATORI;
   const chiave = giornoSfidaChiave();
@@ -846,22 +886,25 @@ function renderSfida() {
     const p = [0, 0]; Object.values(gg.fatte || {}).forEach(f => f.forEach((v, i) => v && p[i]++));
     return `<div class="scheda" style="display:flex;justify-content:space-between;align-items:center"><span>${k === "pre" ? "Prova" : dataBreve(k)}</span><b>${G} ${p[0]} – ${p[1]} ${F}</b></div>`;
   }).join("") : "";
+  const PENITENZA = "Il vincitore sceglie una penitenza da far fare al perdente (tipo fare le lavatrici per un mese per entrambi) 😈";
   let finale = "";
-  if (finito && (tot[0] || tot[1])) {
-    const tit = tot[0] === tot[1] ? ["🤝", "Coppia Imperiale", "Pareggio perfetto: regnate insieme!"]
-      : tot[0] > tot[1] ? ["👑", `${G}, Imperatore del Viaggio`, `Ha vinto con ${pt(tot[0])} contro ${tot[1]}`]
-      : ["👑", `${F}, Imperatrice del Viaggio`, `Ha vinto con ${pt(tot[1])} contro ${tot[0]}`];
-    finale = `<div class="titolo-finale"><div style="font-size:40px">${tit[0]}</div><div class="t">${esc(tit[1])}</div><div>${esc(tit[2])}</div></div>`;
+  if (S.sfida.svelato && (tot[0] || tot[1])) {
+    const tit = titoloVincitore(tot);
+    finale = `<div class="titolo-finale"><div style="font-size:40px">${tit[0]}</div><div class="t">${esc(tit[1])}</div><div>${esc(tit[2])}</div>
+      <div class="penitenza">${esc(tot[0] === tot[1] ? "Pareggio: ognuno sceglie una penitenza per l'altro! (tipo fare le lavatrici per un mese per entrambi) 😈" : PENITENZA)}</div></div>`;
   }
+  const svela = `<button class="btn-svela" id="svela">🥁 Svela il vincitore</button>`;
   $("#v-sfida").innerHTML = `
     <div class="tabellone">
       <div class="gioc"><div class="corona">${corona(0)}</div><div class="nome">${esc(G)}</div><div class="punti">${tot[0]}</div><div class="oggi-p">oggi +${oggi[0]}</div></div>
       <div class="vs">对</div>
       <div class="gioc"><div class="corona">${corona(1)}</div><div class="nome">${esc(F)}</div><div class="punti">${tot[1]}</div><div class="oggi-p">oggi +${oggi[1]}</div></div>
     </div>
+    ${svela}
     ${finale}
     ${corpo}
     ${storico}`;
+  $("#svela").onclick = svelaVincitore;
   const td = $("#test-dopo"); if (td) td.onclick = () => {
     const i = indiceOggi(); S.giornoTest = Math.min((i < 0 ? -1 : i) + 1, GIORNI.length - 1); giornoSelezionato = null; salva(); bannerTest(); renderSfida();
     toast(`Ora è il Giorno ${S.giornoTest + 1}: premete "Comincia la sfida"`);

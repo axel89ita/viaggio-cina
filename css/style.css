@@ -430,3 +430,20 @@ nav.barra .pallino { position: absolute; top: 2px; right: calc(50% - 18px); widt
 .scelta-selfie img { width: 64px; height: 64px; object-fit: cover; border-radius: 10px; flex: 0 0 64px; }
 .scelta-selfie span { font-weight: 700; font-size: 16px; }
 .scelta-selfie small { display: block; font-weight: 400; font-size: 13px; color: var(--inchiostro-2); }
+
+/* ---------- Svela il vincitore ---------- */
+.btn-svela {
+  width: 100%; margin-top: 12px; border: 2px solid var(--oro); border-radius: 16px; padding: 14px;
+  background: linear-gradient(135deg, var(--oro), var(--oro-chiaro)); color: var(--rosso-scuro);
+  font-family: var(--pennello); font-size: 24px; box-shadow: var(--ombra);
+}
+.btn-svela:active { transform: scale(.98); }
+.festa .conta { font-family: var(--pennello); font-size: 140px; color: var(--oro); line-height: 1; margin-top: 4vh; animation: pulsa .9s ease; }
+@keyframes pulsa { 0% { transform: scale(2.2); opacity: 0; } 40% { transform: scale(.9); opacity: 1; } 100% { transform: scale(1); } }
+.punteggio-finale { display: flex; align-items: center; justify-content: center; gap: 18px; margin: 14px 0 8px; }
+.punteggio-finale > div:not(.vs) { text-align: center; background: rgba(0,0,0,.25); border: 1.5px solid rgba(233,207,133,.4); border-radius: 16px; padding: 10px 18px; min-width: 110px; }
+.punteggio-finale span { display: block; font-family: var(--pennello); font-size: 22px; color: var(--oro-chiaro); }
+.punteggio-finale b { font-size: 46px; color: var(--bianco); }
+.punteggio-finale .vince { border-color: var(--oro); box-shadow: 0 0 24px rgba(233,207,133,.45); }
+.punteggio-finale .vs { font-family: var(--pennello); font-size: 30px; color: var(--oro); }
+.penitenza { margin-top: 10px; background: rgba(255,250,240,.7); border-radius: 12px; padding: 8px 10px; font-size: 14px; }
