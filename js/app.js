@@ -44,7 +44,7 @@ const fmtDist = (m) => m < 1000 ? `${Math.round(m / 10) * 10} m` : `${(m / 1000)
 
 /* ---------------- Stato salvato ---------------- */
 const CHIAVE = "viaggio-cina-stato-v1";
-const statoBase = () => ({ sbloccato: false, visti: {}, frasarioComicoVisto: false, sfida: { usate: [], giorni: {} }, giornoTest: null, posizione: null, avvisiChiusi: {} });
+const statoBase = () => ({ sbloccato: false, visti: {}, selfie: [], timbroSu: {}, frasarioComicoVisto: false, sfida: { usate: [], giorni: {} }, giornoTest: null, posizione: null, avvisiChiusi: {} });
 let S;
 try { S = Object.assign(statoBase(), JSON.parse(localStorage.getItem(CHIAVE) || "{}")); } catch { S = statoBase(); }
 const salva = () => { try { localStorage.setItem(CHIAVE, JSON.stringify(S)); } catch {} };
@@ -260,6 +260,10 @@ function renderHome() {
     <div class="saluto"><div class="grande">Ciao Flavia e Giuseppe!</div><div class="piccolo">一路顺风 · Buon viaggio</div></div>
     ${NUVOLA}
     ${card}
+    ${i < 0 ? `<div class="scheda cornice" style="margin-top:14px">
+      <b>🧳 Prima di partire: Amap in inglese</b>
+      <p style="margin:6px 0 0;font-size:14px">Installate <b>Amap</b> (高德地图) e mettetela in inglese: icona del profilo in basso a destra → ingranaggio in alto a destra → <span class="cn">通用设置</span> (Impostazioni generali) → <span class="cn">语言</span> (Lingua) → <b>English</b>. L'italiano non c'è. Se il telefono è già in inglese, a volte parte in inglese da sola.</p>
+    </div>` : ""}
     <h2 class="sezione">Sempre a portata</h2>
     <div class="griglia-2">
       <button class="btn rosso" id="home-hotel">🏨 Torna in hotel</button>
@@ -371,12 +375,19 @@ document.addEventListener("click", e => {
   if (S.visti[t.id]) {
     foglio(`<h3>${esc(t.nome)}</h3><p>${S.sbloccato ? "Volete togliere il timbro da questa tappa?" : "Volete segnarla come non ancora visitata?"}</p>
       <div style="display:grid;gap:8px"><button class="btn rosso" id="annulla-timbro">${S.sbloccato ? "Togli il timbro" : "Segna come da visitare"}</button><button class="btn contorno" data-chiudi>Lascia così</button></div>`);
-    $("#annulla-timbro").onclick = () => { delete S.visti[t.id]; salva(); chiudiFoglio(); RENDER[vistaCorrente](); };
+    $("#annulla-timbro").onclick = () => { delete S.visti[t.id]; if (S.timbroSu) delete S.timbroSu[t.id]; salva(); PASSAPORTO.invalida(); chiudiFoglio(); RENDER[vistaCorrente](); };
   } else timbra(t);
 });
 
-function timbra(t) {
-  S.visti[t.id] = Date.now(); salva();
+async function timbra(t) {
+  let su = null;
+  if (S.sbloccato) {
+    su = await PASSAPORTO.scegliSelfie(`🔴 Timbro: ${esc(t.nome)}`, PASSAPORTO.selfieRecente());
+    if (su === undefined) return; // annullato
+  }
+  S.visti[t.id] = Date.now();
+  if (su) (S.timbroSu ||= {})[t.id] = su;
+  salva();
   if (S.sbloccato) {
     const a = document.createElement("div"); a.className = "timbro-anim";
     a.innerHTML = `<div class="s">${esc(t.timbro || "游")}</div>`;
@@ -387,7 +398,7 @@ function timbra(t) {
   }
   RENDER[vistaCorrente]();
   toast(S.sbloccato ? `Timbro di <b>${esc(t.nome)}</b> aggiunto al passaporto!` : `<b>${esc(t.nome)}</b> segnata come visitata ✓`,
-    [{ t: "Annulla", f: () => { delete S.visti[t.id]; salva(); PASSAPORTO.invalida(); RENDER[vistaCorrente](); } }]);
+    [{ t: "Annulla", f: () => { delete S.visti[t.id]; if (S.timbroSu) delete S.timbroSu[t.id]; salva(); PASSAPORTO.invalida(); RENDER[vistaCorrente](); } }]);
 }
 
 /* ---------------- DOVE MANGIARE ---------------- */
@@ -533,24 +544,39 @@ function coriandoli() {
   })(t0);
 }
 
-/* ---------------- PASSAPORTO DEL DRAGONE ---------------- */
+/* ---------------- PASSAPORTO DEL DRAGONE ----------------
+   Si possono fare più selfie; ogni timbro sta su un selfie scelto. */
 const PASSAPORTO = (() => {
-  let urlSelfie = null, valida = false, ultimaTela = null;
-  async function caricaSelfie() {
-    const blob = await DB.leggi("selfie").catch(() => null);
-    if (urlSelfie) URL.revokeObjectURL(urlSelfie);
-    urlSelfie = blob ? URL.createObjectURL(blob) : null;
-    return urlSelfie;
-  }
+  const urls = {}; const tele = {}; let sel = null;
+  S.selfie ||= []; S.timbroSu ||= {};
   const caricaImg = (src) => new Promise((ok, ko) => { const i = new Image(); i.onload = () => ok(i); i.onerror = ko; i.src = src; });
+  const nomeSelfie = (s) => `Selfie ${S.selfie.indexOf(s) + 1}`;
+  const dataSelfie = (s) => new Date(s.t).toLocaleDateString("it-IT", { day: "numeric", month: "short" });
 
-  /* posizioni fisse lungo i bordi: ogni attrazione ha sempre il suo posto */
+  // conversione dal vecchio formato (un solo selfie)
+  async function migra() {
+    if (S.selfie.length) return;
+    const vecchio = await DB.leggi("selfie").catch(() => null);
+    if (vecchio) { const id = "s" + Date.now(); await DB.scrivi("selfie:" + id, vecchio); S.selfie.push({ id, t: Date.now() }); salva(); }
+  }
+  /** selfie su cui sta il timbro di una tappa (quelli senza scelta vanno sul primo) */
+  function selfieDi(tid) {
+    const id = S.timbroSu[tid];
+    return S.selfie.find(s => s.id === id) || S.selfie[0] || null;
+  }
+  const timbriSu = (s) => TUTTE_TAPPE.filter(t => S.visti[t.id] && selfieDi(t.id) === s);
+
+  async function url(s) {
+    if (urls[s.id]) return urls[s.id];
+    const blob = await DB.leggi("selfie:" + s.id).catch(() => null);
+    return (urls[s.id] = blob ? URL.createObjectURL(blob) : null);
+  }
+
   function posizioni(n, W, H, lato) {
     const m = lato * 0.55, perc = [];
     const w = W - 2 * m, h = H - 2 * m, P = 2 * (w + h);
     for (let k = 0; k < n; k++) {
-      let d = ((k * 0.618034) % 1) * P; // distribuzione "aurea": riempie i bordi in modo uniforme
-      let x, y;
+      let d = ((k * 0.618034) % 1) * P, x, y;
       if (d < w) { x = m + d; y = m; } else if ((d -= w) < h) { x = W - m; y = m + d; } else if ((d -= h) < w) { x = W - m - d; y = H - m; } else { d -= w; x = m; y = H - m - d; }
       perc.push([x, y]);
     }
@@ -558,7 +584,7 @@ const PASSAPORTO = (() => {
   }
   function disegnaTimbro(ctx, t, x, y, lato, data) {
     const r = rnd(hash(t.id));
-    const stile = Math.floor(r() * 3); // 0 sigillo pieno, 1 sigillo a contorno, 2 timbro tondo
+    const stile = Math.floor(r() * 3);
     const colore = r() < 0.72 ? "179,38,30" : "35,64,140";
     const ang = (r() - 0.5) * 0.6;
     const chars = [...(t.timbro || t.nomeCn || "游").slice(0, 4)];
@@ -578,7 +604,6 @@ const PASSAPORTO = (() => {
       ctx.fillText(String(t._citta || "").toUpperCase(), 0, -lato * 0.28);
     } else {
       const s = lato * 0.86;
-      // bordo irregolare tipo inchiostro
       ctx.beginPath();
       for (let k = 0; k < 4; k++) {
         const cx = [-1, 1, 1, -1][k] * s / 2, cy = [-1, -1, 1, 1][k] * s / 2;
@@ -587,7 +612,6 @@ const PASSAPORTO = (() => {
       ctx.closePath();
       if (stile === 0) { ctx.fillStyle = fill; ctx.fill(); } else { ctx.lineWidth = lato * 0.07; ctx.strokeStyle = fill; ctx.stroke(); }
       ctx.fillStyle = stile === 0 ? "rgba(255,248,235,0.95)" : fill;
-      // disposizione caratteri: verticale, da destra a sinistra (come i sigilli veri)
       const n = chars.length;
       if (n === 4) {
         ctx.font = font(s * 0.4);
@@ -598,14 +622,14 @@ const PASSAPORTO = (() => {
         ctx.font = font(s * (n === 2 ? 0.42 : 0.29));
         chars.forEach((ch, k) => ctx.fillText(ch, 0, (k - (n - 1) / 2) * s * (n === 2 ? 0.44 : 0.3)));
       }
-      // texture: puntini "mancanti" come un timbro vero
       ctx.globalCompositeOperation = "destination-out";
       for (let k = 0; k < 40; k++) { ctx.beginPath(); ctx.arc((r() - .5) * s, (r() - .5) * s, r() * lato * 0.02, 0, Math.PI * 2); ctx.fill(); }
     }
     ctx.restore();
   }
-  async function componi() {
-    const src = await caricaSelfie(); if (!src) return null;
+  async function componi(s) {
+    if (tele[s.id]) return tele[s.id];
+    const src = await url(s); if (!src) return null;
     await document.fonts.load("40px Pennello").catch(() => {});
     const img = await caricaImg(src);
     const MAX = 1440, k = Math.min(1, MAX / Math.max(img.width, img.height));
@@ -613,64 +637,115 @@ const PASSAPORTO = (() => {
     const tela = document.createElement("canvas"); tela.width = W; tela.height = H;
     const ctx = tela.getContext("2d");
     ctx.drawImage(img, 0, 0, W, H);
-    // cornice da passaporto
     ctx.strokeStyle = "rgba(199,154,44,.9)"; ctx.lineWidth = W * 0.012; ctx.strokeRect(W * 0.012, W * 0.012, W - W * 0.024, H - W * 0.024);
-    const n = TUTTE_TAPPE.length;
-    const lato = Math.max(Math.min(W, H) * 0.15, Math.min(Math.min(W, H) * 0.24, (2 * (W + H)) / Math.max(n, 1) * 0.75));
-    const pos = posizioni(n, W, H, lato);
-    TUTTE_TAPPE.forEach((t, i) => {
-      if (!S.visti[t.id]) return;
+    const sue = timbriSu(s);
+    const n = Math.max(sue.length, 8);
+    const lato = Math.max(Math.min(W, H) * 0.15, Math.min(Math.min(W, H) * 0.24, (2 * (W + H)) / n * 0.75));
+    const pos = posizioni(sue.length, W, H, lato);
+    sue.forEach((t, i) => {
       const d = new Date(S.visti[t.id]);
       disegnaTimbro(ctx, t, pos[i][0], pos[i][1], lato, `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`);
     });
-    return tela;
+    return (tele[s.id] = tela);
   }
+
+  /** Chiede su quale selfie mettere il timbro (solo se ce n'è più di uno) */
+  async function scegliSelfie(titolo, corrente) {
+    await migra();
+    if (S.selfie.length <= 1) return S.selfie[0]?.id || null;
+    const miniature = await Promise.all(S.selfie.map(async s => ({ s, u: await url(s) })));
+    return new Promise(ok => {
+      foglio(`<h3>${titolo}</h3><p>Su quale selfie volete metterlo?</p>
+        <div class="scelta-selfie">${miniature.slice().reverse().map(({ s, u }) => `
+          <button data-sceglie="${s.id}" class="${corrente === s.id ? "sel" : ""}">
+            <img src="${u}" alt=""><span>${nomeSelfie(s)}<small>${dataSelfie(s)} · ${timbriSu(s).length} timbri</small></span>
+          </button>`).join("")}</div>
+        <button class="btn contorno pieno" data-chiudi style="margin-top:10px">Annulla</button>`);
+      let scelto = null;
+      $("#foglio").querySelectorAll("[data-sceglie]").forEach(b => b.onclick = () => { scelto = b.dataset.sceglie; chiudiFoglio(); ok(scelto); });
+      const velo = $("#velo");
+      const guarda = new MutationObserver(() => { if (!velo.classList.contains("aperto")) { guarda.disconnect(); if (!scelto) ok(undefined); } });
+      guarda.observe(velo, { attributes: true, attributeFilter: ["class"] });
+    });
+  }
+
   async function render() {
+    await migra();
     const el = $("#v-passaporto");
     const timbrati = TUTTE_TAPPE.filter(t => S.visti[t.id]).length, tot = TUTTE_TAPPE.length;
-    const src = await caricaSelfie();
+    if (!sel || !S.selfie.find(s => s.id === sel)) sel = S.selfie[S.selfie.length - 1]?.id || null;
+    const corrente = S.selfie.find(s => s.id === sel);
+    const multi = S.selfie.length > 1;
     const lista = GIORNI.map((g, gi) => `
       <h2 class="sezione">Giorno ${gi + 1} · ${esc(g.citta)}</h2>
-      <div class="lista-timbri">${g.tappe.map(t => `
+      <div class="lista-timbri">${g.tappe.map(t => {
+        const su = S.visti[t.id] ? selfieDi(t.id) : null;
+        return `
         <div class="riga-timbro ${S.visti[t.id] ? "ok" : ""}">
           <div class="sig">${esc((t.timbro || "").slice(0, 4))}</div>
-          <div class="n">${esc(t.nome)}<small>${S.visti[t.id] ? "Timbrato il " + new Date(S.visti[t.id]).toLocaleDateString("it-IT") : "Da timbrare"}</small></div>
+          <div class="n">${esc(t.nome)}<small>${S.visti[t.id] ? "Timbrato il " + new Date(S.visti[t.id]).toLocaleDateString("it-IT") + (multi && su ? ` · su ${nomeSelfie(su)}` : "") : "Da timbrare"}</small>
+            ${S.visti[t.id] && multi ? `<button class="mini-link" data-sposta="${esc(t.id)}">↪ Sposta su un altro selfie</button>` : ""}</div>
           <button class="btn ${S.visti[t.id] ? "giada" : "rosso"}" style="padding:8px 11px" data-timbra="${esc(t.id)}">${S.visti[t.id] ? "✓" : "Timbra"}</button>
-        </div>`).join("")}</div>`).join("");
+        </div>`;
+      }).join("")}</div>`).join("");
     const finale = tot && timbrati === tot ? `<div class="titolo-finale"><div style="font-size:40px">👑🐉👑</div><div class="t">Imperatori del Viaggio</div><div>Avete collezionato tutti i ${tot} timbri!</div></div>` : "";
-    el.innerHTML = src ? `
+    const galleria = multi ? `<div class="galleria-selfie">${(await Promise.all(S.selfie.map(async s => `
+        <button data-selfie="${s.id}" class="${s.id === sel ? "sel" : ""}"><img src="${await url(s)}" alt=""><span>${nomeSelfie(s)}</span></button>`))).join("")}</div>` : "";
+    el.innerHTML = corrente ? `
+      ${galleria}
       <canvas class="tela-passaporto" id="tela-pass"></canvas>
-      <div class="contatore-timbri">${timbrati} / ${tot} timbri</div>
+      <div class="contatore-timbri">${multi ? `${nomeSelfie(corrente)}: ${timbriSu(corrente).length} timbri · ` : ""}${timbrati} / ${tot} in totale</div>
       <div class="griglia-2">
         <button class="btn rosso" id="pass-condividi">📤 Salva / Condividi</button>
-        <button class="btn contorno" id="pass-rifai">📷 Rifai il selfie</button>
+        <button class="btn contorno" id="pass-nuovo">📷 Nuovo selfie</button>
       </div>
+      ${multi ? `<button class="mini-link" id="pass-elimina" style="display:block;margin:8px auto 0">🗑 Elimina questo selfie</button>` : ""}
       ${finale}
       ${lista}` : `
       <div class="passaporto-copertina">
         <div class="drago">🐉</div><div class="t">Passaporto del Dragone</div>
         <div style="color:var(--oro-chiaro);margin:6px 0 14px">龙之护照</div>
-        <p style="color:var(--bianco);font-size:15px">Per iniziare fatevi un selfie insieme: a ogni attrazione visitata ci comparirà sopra un timbro, come su un vero passaporto.</p>
+        <p style="color:var(--bianco);font-size:15px">Fatevi un selfie a inizio viaggio (o quando ci sono troppi timbri): a ogni attrazione visitata ci comparirà sopra un timbro, come su un vero passaporto.</p>
         <button class="btn oro pieno" id="pass-selfie">📷 Scatta il selfie</button>
-        <div style="color:var(--oro-chiaro);font-size:12px;margin-top:10px">La foto resta solo su questo telefono.</div>
+        <div style="color:var(--oro-chiaro);font-size:12px;margin-top:10px">Le foto restano solo su questo telefono.</div>
       </div>
       ${timbrati ? `<p style="text-align:center">Avete già ${timbrati} ${timbrati === 1 ? "timbro" : "timbri"} che aspettano il vostro selfie!</p>` : ""}
       ${lista}`;
-    const sel = $("#pass-selfie"); if (sel) sel.onclick = () => $("#input-selfie").click();
-    const rif = $("#pass-rifai"); if (rif) rif.onclick = () => {
-      foglio(`<h3>Rifare il selfie?</h3><p>I timbri restano: verranno messi sulla nuova foto.</p><div style="display:grid;gap:8px"><button class="btn rosso" id="conf-rifai">📷 Sì, nuovo selfie</button><button class="btn contorno" data-chiudi>No</button></div>`);
-      $("#conf-rifai").onclick = () => { chiudiFoglio(); $("#input-selfie").click(); };
+    const scatta = () => $("#input-selfie").click();
+    const b1 = $("#pass-selfie"); if (b1) b1.onclick = scatta;
+    const b2 = $("#pass-nuovo"); if (b2) b2.onclick = () => {
+      foglio(`<h3>Nuovo selfie</h3><p>Il selfie attuale resta salvato con i suoi timbri. Sul nuovo potrete mettere i prossimi: quando timbrate vi chiederò su quale selfie metterli.</p>
+        <div style="display:grid;gap:8px"><button class="btn rosso" id="conf-nuovo">📷 Scatta</button><button class="btn contorno" data-chiudi>Annulla</button></div>`);
+      $("#conf-nuovo").onclick = () => { chiudiFoglio(); scatta(); };
     };
-    const cond = $("#pass-condividi"); if (cond) cond.onclick = condividi;
-    if (src) {
-      if (!valida || !ultimaTela) { ultimaTela = await componi(); valida = true; }
-      const c = $("#tela-pass"); if (c && ultimaTela) { c.width = ultimaTela.width; c.height = ultimaTela.height; c.getContext("2d").drawImage(ultimaTela, 0, 0); }
+    const b3 = $("#pass-condividi"); if (b3) b3.onclick = () => condividi(corrente);
+    const b4 = $("#pass-elimina"); if (b4) b4.onclick = () => {
+      foglio(`<h3>Eliminare ${nomeSelfie(corrente)}?</h3><p>La foto verrà cancellata. I suoi timbri non si perdono: passano sul primo selfie rimasto.</p>
+        <div style="display:grid;gap:8px"><button class="btn rosso" id="conf-elimina">Elimina</button><button class="btn contorno" data-chiudi>Annulla</button></div>`);
+      $("#conf-elimina").onclick = async () => {
+        S.selfie = S.selfie.filter(s => s.id !== corrente.id);
+        Object.keys(S.timbroSu).forEach(k => { if (S.timbroSu[k] === corrente.id) delete S.timbroSu[k]; });
+        salva(); await DB.scrivi("selfie:" + corrente.id, null);
+        Object.keys(tele).forEach(k => delete tele[k]); sel = null;
+        chiudiFoglio(); render();
+      };
+    };
+    el.querySelectorAll("[data-selfie]").forEach(b => b.onclick = () => { sel = b.dataset.selfie; render(); });
+    el.querySelectorAll("[data-sposta]").forEach(b => b.onclick = async () => {
+      const t = tappaPerId(b.dataset.sposta);
+      const id = await scegliSelfie(`Sposta il timbro di ${esc(t.nome)}`, selfieDi(t.id)?.id);
+      if (!id) return;
+      S.timbroSu[t.id] = id; salva(); invalida(); sel = id; render();
+    });
+    if (corrente) {
+      const tela = await componi(corrente);
+      const c = $("#tela-pass"); if (c && tela) { c.width = tela.width; c.height = tela.height; c.getContext("2d").drawImage(tela, 0, 0); }
     }
   }
-  async function condividi() {
-    if (!ultimaTela) return;
-    const blob = await new Promise(ok => ultimaTela.toBlob(ok, "image/jpeg", 0.9));
-    const file = new File([blob], "passaporto-del-dragone.jpg", { type: "image/jpeg" });
+  async function condividi(s) {
+    const tela = s && await componi(s); if (!tela) return;
+    const blob = await new Promise(ok => tela.toBlob(ok, "image/jpeg", 0.9));
+    const file = new File([blob], `passaporto-del-dragone-${S.selfie.indexOf(s) + 1}.jpg`, { type: "image/jpeg" });
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       try { await navigator.share({ files: [file], title: "Passaporto del Dragone" }); } catch {}
     } else {
@@ -680,20 +755,24 @@ const PASSAPORTO = (() => {
   }
   $("#input-selfie").addEventListener("change", async (e) => {
     const f = e.target.files[0]; if (!f) return;
-    // ridimensiona e salva (anche per correggere l'orientamento)
+    await migra();
+    let blob = f;
     try {
       const bmp = await createImageBitmap(f, { imageOrientation: "from-image" }).catch(() => createImageBitmap(f));
       const MAX = 1440, k = Math.min(1, MAX / Math.max(bmp.width, bmp.height));
       const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
       c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
-      const blob = await new Promise(ok => c.toBlob(ok, "image/jpeg", 0.9));
-      await DB.scrivi("selfie", blob);
-    } catch { await DB.scrivi("selfie", f); }
-    e.target.value = "";
-    valida = false; render();
-    toast("Selfie salvato! Ora collezionate i timbri 🐉");
+      blob = await new Promise(ok => c.toBlob(ok, "image/jpeg", 0.9));
+    } catch {}
+    const id = "s" + Date.now();
+    await DB.scrivi("selfie:" + id, blob);
+    S.selfie.push({ id, t: Date.now() }); salva();
+    e.target.value = ""; sel = id;
+    render();
+    toast(S.selfie.length === 1 ? "Selfie salvato! Ora collezionate i timbri 🐉" : `Nuovo selfie salvato! Quando timbrate potrete scegliere su quale metterlo.`);
   });
-  return { render, invalida() { valida = false; } };
+  function invalida() { Object.keys(tele).forEach(k => delete tele[k]); }
+  return { render, invalida, scegliSelfie, selfieRecente: () => S.selfie[S.selfie.length - 1]?.id || null };
 })();
 
 /* ---------------- SFIDA GIUSEPPE vs FLAVIA ---------------- */
@@ -735,8 +814,10 @@ function renderSfida() {
         const m = MISSIONI.find(x => x.n === n), f = g.fatte[n] || [false, false];
         return `<div class="missione"><div class="cat">${ICONE_CATEGORIA[m.cat]} ${esc(m.cat)}</div><div class="t">${esc(m.t)}</div>
           <div class="spunte">${[G, F].map((nome, i) => `<button class="spunta ${f[i] ? "fatta" : ""}" data-spunta="${n}:${i}">${f[i] ? "✓ " : "○ "}${esc(nome)}</button>`).join("")}</div></div>`;
-      }).join("");
+      }).join("") +
+      `<div class="nota-giorno" style="margin-top:4px">🌅 Domani qui troverete di nuovo il pulsante "Comincia la sfida" per estrarre 5 missioni nuove. Le missioni di oggi resteranno sotto, nei giorni precedenti, con il loro punteggio.</div>`;
   }
+  if (CONFIG.MODALITA_TEST) corpo += `<button class="btn contorno pieno" id="test-dopo" style="margin-top:10px">🧪 Test: passa al giorno successivo</button>`;
   const passati = Object.entries(S.sfida.giorni).filter(([k]) => k !== chiave).sort(([a], [b]) => a < b ? 1 : -1);
   const storico = passati.length ? `<h2 class="sezione">Giorni precedenti</h2>` + passati.map(([k, gg]) => {
     const p = [0, 0]; Object.values(gg.fatte || {}).forEach(f => f.forEach((v, i) => v && p[i]++));
@@ -758,6 +839,10 @@ function renderSfida() {
     ${finale}
     ${corpo}
     ${storico}`;
+  const td = $("#test-dopo"); if (td) td.onclick = () => {
+    const i = indiceOggi(); S.giornoTest = Math.min((i < 0 ? -1 : i) + 1, GIORNI.length - 1); giornoSelezionato = null; salva(); bannerTest(); renderSfida();
+    toast(`Ora è il Giorno ${S.giornoTest + 1}: premete "Comincia la sfida"`);
+  };
   const c = $("#comincia"); if (c) c.onclick = () => {
     S.sfida.giorni[chiave] = { missioni: estraiMissioni(), fatte: {} }; salva(); renderSfida();
     toast("5 missioni estratte! Che vinca il migliore 🐉");

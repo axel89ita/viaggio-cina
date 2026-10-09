@@ -91,11 +91,11 @@ const ICONE_CATEGORIA = { "Cibo": "🥟", "Lingua e incontri": "🗣️", "Foto"
 
 const AIUTI = {
   itinerario: { t: "Itinerario", d: "Qui trovate il programma giorno per giorno. Toccate un giorno per vedere tappe, tempi di visita e spostamenti. In cima c'è la stima della durata totale della giornata." },
-  portami: { t: "Portami qui", d: "Il pulsante arancione apre Amap con il percorso già impostato dalla vostra posizione. Se Amap non funziona, usate il pulsante grigio di Apple Maps." },
+  portami: { t: "Portami qui", d: "Il pulsante arancione apre Amap con il percorso già impostato dalla vostra posizione. Se Amap non funziona, usate il pulsante grigio di Apple Maps. Amap in cinese? Mettetela in inglese: icona del profilo in basso a destra → ingranaggio in alto a destra → 通用设置 (Impostazioni generali) → 语言 (Lingua) → English. L'italiano non c'è." },
   tassista: { t: "Mostra al tassista", d: "Mostra nome e indirizzo in cinese a caratteri grandi. Giratelo verso il tassista o verso chiunque debba aiutarvi." },
   hotel: { t: "Torna in hotel", d: "Porta all'hotel di quella sera, con navigazione e indirizzo in cinese già pronti." },
   mangiare: { t: "Dove mangiare", d: "I locali consigliati, divisi per città e vicini alle tappe del giorno. Toccate un locale per vedere la descrizione e arrivarci." },
   frasario: { t: "Frasario", d: "Toccate una frase per mostrarla in grande, oppure premete 🔊 per farla leggere all'iPhone in cinese." },
-  passaporto: { t: "Passaporto del Dragone", d: "Fatevi un selfie a inizio viaggio. A ogni attrazione visitata premete \"Timbra\" e sul selfie comparirà il suo timbro. Potete salvarlo o condividerlo quando volete." },
-  sfida: { t: "Sfida Giuseppe vs Flavia", d: "Ogni giorno premete \"Comincia la sfida\" per estrarre 5 missioni. Quando uno di voi ne completa una spunta il proprio nome. Chi fa più punti a fine viaggio vince il titolo." },
+  passaporto: { t: "Passaporto del Dragone", d: "Fatevi un selfie a inizio viaggio (o quando ci sono troppi timbri): potete farne quanti volete. A ogni attrazione visitata premete \"Timbra\" e scegliete su quale selfie mettere il timbro. Toccate le foto in alto per passare da un selfie all'altro e salvatele o condividetele quando volete." },
+  sfida: { t: "Sfida Giuseppe vs Flavia", d: "Ogni giorno premete \"Comincia la sfida\" per estrarre 5 missioni. Quando uno di voi ne completa una spunta il proprio nome. Le missioni cambiano ogni giorno: dal giorno dopo trovate di nuovo il pulsante \"Comincia la sfida\" per estrarre le nuove, e quelle dei giorni passati restano in fondo con il punteggio. Chi fa più punti a fine viaggio vince il titolo." },
 };
