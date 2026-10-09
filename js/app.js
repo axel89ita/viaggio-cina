@@ -115,8 +115,7 @@ function schermoIntero(html) {
 /** Ingrandisce il testo cinese il più possibile senza farlo uscire dallo schermo */
 function adatta() {
   const si = $("#schermo-intero");
-  const telefonoDiLato = innerWidth > innerHeight;          // telefono girato fisicamente
-  si.classList.toggle("di-lato", telefonoDiLato);
+  const telefonoDiLato = matchMedia("(orientation: landscape)").matches; // telefono girato fisicamente
   const c = $("#si-centro"), oriz = telefonoDiLato || si.classList.contains("orizzontale");
   const grandi = c.querySelectorAll(".grande-cn"), medi = c.querySelectorAll(".medio-cn");
   const corto = Math.min(innerWidth, innerHeight);
@@ -131,7 +130,11 @@ $("#si-ruota").onclick = () => {
   $("#si-ruota").textContent = o ? "↺ Torna verticale" : "↻ Gira in orizzontale";
   requestAnimationFrame(adatta);
 };
-addEventListener("resize", () => { if ($("#schermo-intero").classList.contains("aperto")) adatta(); });
+// Al cambio di orientamento le misure arrivano con un attimo di ritardo: si riadatta più volte
+function riadatta() { if (!$("#schermo-intero").classList.contains("aperto")) return; adatta(); setTimeout(adatta, 250); setTimeout(adatta, 700); }
+addEventListener("resize", riadatta);
+addEventListener("orientationchange", riadatta);
+matchMedia("(orientation: landscape)").addEventListener?.("change", riadatta);
 
 function mostraTassista(luogo) {
   schermoIntero(`

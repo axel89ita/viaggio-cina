@@ -290,13 +290,18 @@ h2.sezione::after {
   gap: 2vw; justify-content: center;
 }
 .schermo-intero.orizzontale .richiesta { font-size: 5vw; }
-.schermo-intero.orizzontale .sotto, .schermo-intero.di-lato .sotto { display: none; }
-.schermo-intero.orizzontale .grande-cn, .schermo-intero.di-lato .grande-cn { line-height: 1.12; }
-/* Telefono girato fisicamente: niente rotazione, il testo riempie lo schermo orizzontale */
-.schermo-intero.di-lato #si-ruota { visibility: hidden; }
-.schermo-intero.di-lato .centro { position: static; width: auto; height: auto; transform: none; gap: 1vh; }
-.schermo-intero.di-lato .richiesta { font-size: 5vh; }
-.schermo-intero.di-lato { padding-top: calc(var(--safe-t) + 8px); padding-bottom: calc(var(--safe-b) + 8px); }
+.schermo-intero.orizzontale .sotto { display: none; }
+.schermo-intero.orizzontale .grande-cn { line-height: 1.12; }
+@media (orientation: landscape) { .schermo-intero .grande-cn { line-height: 1.12; } }
+/* Telefono girato fisicamente: la rotazione manuale si annulla subito,
+   il testo riempie lo schermo orizzontale */
+@media (orientation: landscape) {
+  .schermo-intero #si-ruota { visibility: hidden; }
+  .schermo-intero .centro, .schermo-intero.orizzontale .centro { position: static; width: auto; height: auto; transform: none; gap: 1vh; }
+  .schermo-intero .richiesta, .schermo-intero.orizzontale .richiesta { font-size: 5vh; }
+  .schermo-intero .sotto { display: none; }
+  .schermo-intero { padding-top: calc(var(--safe-t) + 8px); padding-bottom: calc(var(--safe-b) + 8px); }
+}
 
 /* ---------- Popup aiuto / dialoghi ---------- */
 .velo { position: fixed; inset: 0; background: rgba(20,12,8,.55); z-index: 90; display: none; align-items: flex-end; justify-content: center; }
