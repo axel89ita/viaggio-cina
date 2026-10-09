@@ -108,10 +108,27 @@ $("#btn-aiuto").onclick = mostraAiuto;
 
 /* ---------------- Schermo intero: tassista e frasi ---------------- */
 function schermoIntero(html) {
-  const s = $("#schermo-intero"); $("#si-centro").innerHTML = html; s.classList.remove("capovolto"); s.classList.add("aperto");
+  const s = $("#schermo-intero"); $("#si-centro").innerHTML = html; s.classList.remove("orizzontale"); s.classList.add("aperto");
+  $("#si-ruota").textContent = "↻ Gira in orizzontale";
+  adatta();
+}
+/** Ingrandisce il testo cinese il più possibile senza farlo uscire dallo schermo */
+function adatta() {
+  const c = $("#si-centro"), oriz = $("#schermo-intero").classList.contains("orizzontale");
+  const grandi = c.querySelectorAll(".grande-cn"), medi = c.querySelectorAll(".medio-cn");
+  const corto = Math.min(innerWidth, innerHeight);
+  let px = oriz ? corto * 0.30 : Math.min(64, innerWidth * 0.11);
+  const prova = () => { grandi.forEach(e => e.style.fontSize = px + "px"); medi.forEach(e => e.style.fontSize = Math.max(16, px * 0.42) + "px"); };
+  prova();
+  while (px > 22 && (c.scrollHeight > c.clientHeight + 1 || c.scrollWidth > c.clientWidth + 1)) { px -= 3; prova(); }
 }
 $("#si-chiudi").onclick = () => $("#schermo-intero").classList.remove("aperto");
-$("#si-ruota").onclick = () => $("#schermo-intero").classList.toggle("capovolto");
+$("#si-ruota").onclick = () => {
+  const s = $("#schermo-intero"); const o = s.classList.toggle("orizzontale");
+  $("#si-ruota").textContent = o ? "↺ Torna verticale" : "↻ Gira in orizzontale";
+  requestAnimationFrame(adatta);
+};
+addEventListener("resize", () => { if ($("#schermo-intero").classList.contains("aperto")) adatta(); });
 
 function mostraTassista(luogo) {
   schermoIntero(`

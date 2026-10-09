@@ -281,8 +281,17 @@ h2.sezione::after {
 .schermo-intero .medio-cn { font-family: var(--cn); font-size: clamp(22px, 7vw, 36px); color: var(--inchiostro); line-height: 1.35; word-break: break-all; }
 .schermo-intero .richiesta { font-family: var(--cn); font-size: 22px; color: var(--rosso); }
 .schermo-intero .sotto { font-size: 15px; color: var(--inchiostro-2); }
-.schermo-intero.ruotabile .centro { transition: transform .3s; }
-.schermo-intero.capovolto .centro { transform: rotate(180deg); }
+.si-barra { display: flex; justify-content: space-between; gap: 8px; position: relative; z-index: 2; }
+.schermo-intero .centro { overflow: hidden; }
+.schermo-intero.orizzontale .centro {
+  position: fixed; left: 50%; top: 50%;
+  width: calc(100vh - 140px); height: calc(100vw - 24px);
+  transform: translate(-50%, -50%) rotate(90deg);
+  gap: 2vw; justify-content: center;
+}
+.schermo-intero.orizzontale .richiesta { font-size: 5vw; }
+.schermo-intero.orizzontale .sotto { display: none; }
+.schermo-intero.orizzontale .grande-cn { line-height: 1.12; }
 
 /* ---------- Popup aiuto / dialoghi ---------- */
 .velo { position: fixed; inset: 0; background: rgba(20,12,8,.55); z-index: 90; display: none; align-items: flex-end; justify-content: center; }
