@@ -824,6 +824,7 @@ function titoloVincitore(tot) {
                          : ["👑", `Vince ${F}!`, `${pt(tot[1])} contro ${tot[0]}: Imperatrice del Viaggio`];
 }
 function svelaVincitore() {
+  if (indiceOggi() < GIORNI.length - 1) return;
   const [G, F] = CONFIG.GIOCATORI;
   const { tot } = punteggi();
   const f = $("#festa");
@@ -893,7 +894,11 @@ function renderSfida() {
     finale = `<div class="titolo-finale"><div style="font-size:40px">${tit[0]}</div><div class="t">${esc(tit[1])}</div><div>${esc(tit[2])}</div>
       <div class="penitenza">${esc(tot[0] === tot[1] ? "Pareggio: ognuno sceglie una penitenza per l'altro! (tipo fare le lavatrici per un mese per entrambi) 😈" : PENITENZA)}</div></div>`;
   }
-  const svela = `<button class="btn-svela" id="svela">🥁 Svela il vincitore</button>`;
+  const ultimo = GIORNI[GIORNI.length - 1];
+  const svelabile = indiceOggi() >= GIORNI.length - 1; // solo dall'ultimo giorno del viaggio
+  const svela = svelabile
+    ? `<button class="btn-svela" id="svela">🥁 Svela il vincitore</button>`
+    : `<button class="btn-svela chiuso" id="svela">🔒 Svela il vincitore<small>Si sblocca l'ultimo giorno del viaggio, ${dataBreve(ultimo.data)}</small></button>`;
   $("#v-sfida").innerHTML = `
     <div class="tabellone">
       <div class="gioc"><div class="corona">${corona(0)}</div><div class="nome">${esc(G)}</div><div class="punti">${tot[0]}</div><div class="oggi-p">oggi +${oggi[0]}</div></div>
@@ -904,7 +909,7 @@ function renderSfida() {
     ${finale}
     ${corpo}
     ${storico}`;
-  $("#svela").onclick = svelaVincitore;
+  $("#svela").onclick = svelabile ? svelaVincitore : () => toast(`Pazienza! Il vincitore si svela l'ultimo giorno del viaggio (${dataBreve(ultimo.data)}) 🐉`);
   const td = $("#test-dopo"); if (td) td.onclick = () => {
     const i = indiceOggi(); S.giornoTest = Math.min((i < 0 ? -1 : i) + 1, GIORNI.length - 1); giornoSelezionato = null; salva(); bannerTest(); renderSfida();
     toast(`Ora è il Giorno ${S.giornoTest + 1}: premete "Comincia la sfida"`);
