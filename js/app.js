@@ -475,12 +475,43 @@ function trovaVoce() {
   voceCinese = v.find(x => /zh[-_]CN/i.test(x.lang)) || v.find(x => /^zh/i.test(x.lang)) || null;
 }
 if ("speechSynthesis" in window) { trovaVoce(); speechSynthesis.onvoiceschanged = trovaVoce; }
+function avvisoVoce() {
+  toast(isIOS
+    ? "Non si sente? 1) Togli il silenzioso e alza il volume. 2) Se ancora niente: Impostazioni → Accessibilità → Contenuti letti → Voci → Cinese, e scarica una voce."
+    : "Non si sente? Alza il volume e controlla di avere una voce cinese in Impostazioni → Sintesi vocale.", [], 9000);
+}
 function parla(testo) {
   if (!("speechSynthesis" in window)) { toast("Questo telefono non supporta la lettura ad alta voce."); return; }
-  speechSynthesis.cancel();
+  // iOS: tratta l'audio come "riproduzione", così prova a suonare anche col silenzioso
+  try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch {}
+  const synth = speechSynthesis;
+  // Safari a volte perde la frase se si annulla e si riparla nello stesso istante: si annulla solo se serve
+  if (synth.speaking || synth.pending) synth.cancel();
+  if (!voceCinese) trovaVoce();
   const u = new SpeechSynthesisUtterance(testoPuro(testo).replace(/Cenesi/g, "切内西"));
-  u.lang = "zh-CN"; u.rate = 0.85; if (voceCinese) u.voice = voceCinese;
-  speechSynthesis.speak(u);
+  u.lang = "zh-CN"; u.rate = 0.85; u.volume = 1; if (voceCinese) u.voice = voceCinese;
+  parla.ultima = u; // tiene viva la frase (Safari la può scartare prima di leggerla)
+  let partita = false;
+  u.onstart = () => { partita = true; };
+  u.onerror = (e) => { if (!partita && e.error !== "interrupted" && e.error !== "canceled") avvisoVoce(); };
+  synth.speak(u);
+  if (synth.paused) synth.resume();
+  setTimeout(() => { if (!partita && parla.ultima === u && !synth.speaking) avvisoVoce(); }, 2000);
+}
+/** Frasi registrate (audio/frasi/N.mp3): suonano anche col silenzioso e su ogni telefono.
+    Se il file non c'è si usa la voce sintetica del telefono. */
+let audioFrase = null;
+function suonaFrase(f) {
+  if (typeof AUDIO_FRASI !== "undefined" && AUDIO_FRASI.includes(f.n)) {
+    try {
+      if (audioFrase) audioFrase.pause();
+      audioFrase = new Audio(`audio/frasi/${f.n}.mp3`);
+      const p = audioFrase.play();
+      if (p && p.catch) p.catch(() => parla(f.cn));
+      return;
+    } catch {}
+  }
+  parla(f.cn);
 }
 function rigaFrase(f) {
   return `<div class="frase" data-frase="${f.n}">
@@ -500,7 +531,7 @@ function renderFrasario() {
 }
 document.addEventListener("click", e => {
   const p = e.target.closest("[data-parla]");
-  if (p) { e.stopPropagation(); const f = FRASARIO.find(x => x.n === +p.dataset.parla); parla(f.cn); return; }
+  if (p) { e.stopPropagation(); const f = FRASARIO.find(x => x.n === +p.dataset.parla); suonaFrase(f); return; }
   const r = e.target.closest("[data-frase]");
   if (r) {
     const f = FRASARIO.find(x => x.n === +r.dataset.frase);

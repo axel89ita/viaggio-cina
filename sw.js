@@ -1,5 +1,5 @@
 /* Generato da build.py — non modificare a mano */
-const CACHE = "viaggio-cina-f6ae6b372f";
+const CACHE = "viaggio-cina-92b4727bc3";
 const FILE = [
   "./",
   "./audio/messaggio_colleghi.mp3",
@@ -10,6 +10,7 @@ const FILE = [
   "./icons/icon-512.png",
   "./index.html",
   "./js/app.js",
+  "./js/audio-frasi.js",
   "./js/config.js",
   "./js/contenuti.js",
   "./js/itinerario.js",
