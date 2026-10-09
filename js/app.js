@@ -925,7 +925,15 @@ function pannelloTest() {
 /* ---------------- Avvio ---------------- */
 const RENDER = { home: renderHome, itinerario: renderItinerario, mangiare: renderMangiare, frasario: renderFrasario, passaporto: () => PASSAPORTO.render(), sfida: renderSfida };
 
-if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+if ("serviceWorker" in navigator) {
+  // Quando arriva una versione nuova dell'app, si ricarica da sola (non al primo avvio)
+  const giaControllata = !!navigator.serviceWorker.controller;
+  let ricaricata = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => { if (giaControllata && !ricaricata) { ricaricata = true; location.reload(); } });
+  addEventListener("load", () => navigator.serviceWorker.register("sw.js").then(reg => {
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) reg.update().catch(() => {}); });
+  }).catch(() => {}));
+}
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
 
 bannerTest();

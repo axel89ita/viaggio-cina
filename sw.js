@@ -1,5 +1,5 @@
 /* Generato da build.py — non modificare a mano */
-const CACHE = "viaggio-cina-4f7913e8b3";
+const CACHE = "viaggio-cina-814214208e";
 const FILE = [
   "./",
   "./audio/messaggio_colleghi.mp3",
