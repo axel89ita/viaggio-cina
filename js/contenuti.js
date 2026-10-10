@@ -62,7 +62,7 @@ const MISSIONI = [
   { n: 18, cat: "Lingua e incontri", t: "Fai un complimento in cinese: \"hǎo chī!\" (buonissimo!) al ristorante" },
   // Foto
   { n: 19, cat: "Foto", t: "Selfie imitando la posa di una statua" },
-  { n: 20, cat: "Foto", t: "Foto con il cartello più assurdo tradotto male in inglese" },
+  { n: 20, cat: "Missioni speciali", t: "Chiama tua suocera e dille che il viaggio sta andando bene, ma che sarebbe stato ancora più bello se foste partiti tutti insieme" },
   { n: 21, cat: "Foto", t: "Foto di coppia con un panorama alle spalle in cui \"reggete\" un monumento" },
   { n: 22, cat: "Foto", t: "Foto del piatto più strano della giornata" },
   { n: 23, cat: "Foto", t: "Foto di un gatto o di un cane cinese" },
@@ -82,12 +82,13 @@ const MISSIONI = [
   { n: 35, cat: "Sfide di coppia", t: "Indovina il prezzo di qualcosa: vince chi ci va più vicino" },
   { n: 36, cat: "Sfide di coppia", t: "Fate una gara a chi trova per primo un oggetto rosso e oro" },
   { n: 37, cat: "Sfide di coppia", t: "Racconta all'altro il momento più bello della giornata in 3 parole" },
-  { n: 38, cat: "Sfide di coppia", t: "Scegli tu la cena per l'altro, che non può rifiutare" },
+  { n: 38, cat: "Sfide di coppia", t: "Scegli una pietanza per l'altro, che non può rifiutare" },
   { n: 39, cat: "Sfide di coppia", t: "Fai ridere l'altro durante una visita \"seria\" senza farvi notare" },
   { n: 40, cat: "Sfide di coppia", t: "Inventa un soprannome cinese per l'altro e usalo per tutto il giorno" },
+  { n: 41, cat: "Missioni speciali", t: "Mandate una vostra foto ai colleghi: quello con l'outfit più \"cinesizzato\" vince il punto" },
 ];
 
-const ICONE_CATEGORIA = { "Cibo": "🥟", "Lingua e incontri": "🗣️", "Foto": "📸", "Esplorazione": "🧭", "Sfide di coppia": "💞" };
+const ICONE_CATEGORIA = { "Cibo": "🥟", "Lingua e incontri": "🗣️", "Foto": "📸", "Esplorazione": "🧭", "Sfide di coppia": "💞", "Missioni speciali": "⭐" };
 
 const AIUTI = {
   itinerario: { t: "Itinerario", d: "Qui trovate il programma giorno per giorno. Toccate un giorno per vedere tappe, tempi di visita e spostamenti. In cima c'è la stima della durata totale della giornata." },
