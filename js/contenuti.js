@@ -64,7 +64,7 @@ const MISSIONI = [
   { n: 19, cat: "Foto", t: "Selfie imitando la posa di una statua" },
   { n: 20, cat: "Missioni speciali", t: "Chiama tua suocera e dille che il viaggio sta andando bene, ma che sarebbe stato ancora più bello se foste partiti tutti insieme" },
   { n: 21, cat: "Foto", t: "Foto di coppia con un panorama alle spalle in cui \"reggete\" un monumento" },
-  { n: 22, cat: "Foto", t: "Foto del piatto più strano della giornata" },
+  { n: 22, cat: "Lingua e incontri", t: "Ordina un piatto parlando in cinese (niente aiuti dal telefono né gesti)" },
   { n: 23, cat: "Foto", t: "Foto di un gatto o di un cane cinese" },
   { n: 24, cat: "Foto", t: "Foto di una lanterna rossa" },
   { n: 25, cat: "Foto", t: "Foto saltando davanti a un'attrazione, entrambi in aria" },
