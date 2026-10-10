@@ -1,7 +1,7 @@
 /* Impostazioni generali.
    ⚠️ Prima di mandare il link a Flavia: MODALITA_TEST = false */
 const CONFIG = {
-  MODALITA_TEST: true,
+  MODALITA_TEST: false,
   PAROLA_SEGRETA: "allodole",
   GIOCATORI: ["Giuseppe", "Flavia"],
   RAGGIO_ARRIVO_M: 300,        // distanza per l'avviso "Sei arrivati a..."
