@@ -86,6 +86,7 @@ const MISSIONI = [
   { n: 39, cat: "Sfide di coppia", t: "Fai ridere l'altro durante una visita \"seria\" senza farvi notare" },
   { n: 40, cat: "Sfide di coppia", t: "Inventa un soprannome cinese per l'altro e usalo per tutto il giorno" },
   { n: 41, cat: "Missioni speciali", t: "Mandate una vostra foto ai colleghi: quello con l'outfit più \"cinesizzato\" vince il punto" },
+  { n: 42, cat: "Missioni speciali", t: "Mandate un messaggio vocale ai colleghi raccontando come procede il viaggio: il più simpatico vince il punto" },
 ];
 
 const ICONE_CATEGORIA = { "Cibo": "🥟", "Lingua e incontri": "🗣️", "Foto": "📸", "Esplorazione": "🧭", "Sfide di coppia": "💞", "Missioni speciali": "⭐" };
