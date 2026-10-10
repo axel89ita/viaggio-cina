@@ -19,7 +19,7 @@ const sommaOrario = (hhmm, min) => { const [h, m] = hhmm.split(":").map(Number);
 const hash = (s) => { let h = 2166136261; for (const c of String(s)) { h ^= c.codePointAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
 const rnd = (seed) => () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-const ICONA_MEZZO = { "a piedi": "🚶", "metro": "🚇", "taxi": "🚕", "bus": "🚌", "treno": "🚄", "aereo": "✈️", "barca": "⛴️", "bici": "🚲" };
+const ICONA_MEZZO = { "a piedi": "🚶", "metro": "🚇", "taxi": "🚕", "bus": "🚌", "treno": "🚄", "aereo": "✈️", "barca": "⛴️", "2 ruote": "🛵", "funivia": "🚡" };
 
 /* ---------------- Coordinate (WGS-84 ⇄ GCJ-02) ----------------
    Il GPS dell'iPhone dà WGS-84; Amap usa GCJ-02 (in Cina differiscono di ~300-600 m). */
@@ -60,9 +60,9 @@ const DB = {
 /* ---------------- Dati derivati ---------------- */
 const GIORNI = VIAGGIO.giorni;
 const TUTTE_TAPPE = [];
-GIORNI.forEach((g, gi) => g.tappe.forEach((t, ti) => TUTTE_TAPPE.push(Object.assign(t, { _giorno: gi, _indice: ti, _citta: g.citta }))));
+GIORNI.forEach((g, gi) => g.tappe.forEach((t, ti) => TUTTE_TAPPE.push(Object.assign(t, { _giorno: gi, _indice: ti, _citta: t.citta || g.citta.split("→").pop().trim() }))));
 const tappaPerId = (id) => TUTTE_TAPPE.find(t => t.id === id);
-const CITTA = [...new Set([...GIORNI.map(g => g.citta), ...VIAGGIO.ristoranti.map(r => r.citta)])];
+const CITTA = [...new Set(VIAGGIO.ristoranti.map(r => r.citta))]; // filtri di "Dove mangiare"
 
 VIAGGIO.ristoranti.forEach(r => {
   r._vicine = TUTTE_TAPPE
@@ -150,7 +150,7 @@ function mostraTassista(luogo) {
 function modoAmap(mezzo) {
   if (mezzo === "a piedi") return { t: 2, web: "walk", apple: "w" };
   if (mezzo === "taxi") return { t: 0, web: "car", apple: "d" };
-  if (mezzo === "bici") return { t: 3, web: "ride", apple: "w" };
+  if (mezzo === "2 ruote") return { t: 3, web: "ride", apple: "w" };
   return { t: 1, web: "bus", apple: "r" };
 }
 function apriAmap(luogo, mezzo) {
@@ -347,7 +347,7 @@ function renderItinerario() {
     const vicini = ristorantiVicini(t).length;
     const foto = t.img ? `<div class="foto" style="background-image:url('${esc(t.img)}')">` : `<div class="foto segnaposto"><span>${esc(t.timbro || t.nomeCn?.slice(0, 2) || "")}</span>`;
     return `
-      ${t.spostamento ? `<div class="spostamento">${ICONA_MEZZO[t.spostamento.mezzo] || "➜"} ${esc(t.spostamento.mezzo)} · circa ${fmtDurata(t.spostamento.minuti)}${k === 0 ? " dall'hotel" : ""}</div>` : ""}
+      ${t.spostamento ? `<div class="spostamento">${ICONA_MEZZO[t.spostamento.mezzo] || "➜"} ${esc(t.spostamento.mezzo)} · circa ${fmtDurata(t.spostamento.minuti)}${t.spostamento.da ? " " + esc(t.spostamento.da) : k === 0 ? " dall'hotel" : ""}</div>` : ""}
       <div class="tappa">
         <div class="linea"><div class="num ${fatto ? "fatta" : ""}">${fatto ? "✓" : k + 1}</div>${k < g.tappe.length - 1 ? `<div class="asta"></div>` : ""}</div>
         <div class="corpo"><div class="scheda card-tappa">
@@ -847,6 +847,17 @@ function estraiMissioni() {
   S.sfida.usate.push(...scelte);
   return scelte;
 }
+/** "Svela il vincitore": si apre il giorno CONFIG.SVELA.data dall'ora CONFIG.SVELA.ora (l'ultima sera del viaggio) */
+function svelaAperto() {
+  const i = indiceOggi();
+  const iS = Math.max(0, GIORNI.findIndex(g => g.data === CONFIG.SVELA.data));
+  if (i !== iS) return i > iS;
+  if (CONFIG.MODALITA_TEST && S.giornoTest !== null && S.giornoTest !== undefined) return true;
+  const [h, m] = CONFIG.SVELA.ora.split(":").map(Number);
+  const ora = new Date();
+  return ora.getHours() * 60 + ora.getMinutes() >= h * 60 + m;
+}
+const testoSvela = () => `la sera di ${dataBreve(CONFIG.SVELA.data)}, dalle ${CONFIG.SVELA.ora}`;
 function titoloVincitore(tot) {
   const [G, F] = CONFIG.GIOCATORI;
   const pt = (n) => `${n} ${n === 1 ? "punto" : "punti"}`;
@@ -855,7 +866,7 @@ function titoloVincitore(tot) {
                          : ["👑", `Vince ${F}!`, `${pt(tot[1])} contro ${tot[0]}: Imperatrice del Viaggio`];
 }
 function svelaVincitore() {
-  if (indiceOggi() < GIORNI.length - 1) return;
+  if (!svelaAperto()) return;
   const [G, F] = CONFIG.GIOCATORI;
   const { tot } = punteggi();
   const f = $("#festa");
@@ -925,11 +936,10 @@ function renderSfida() {
     finale = `<div class="titolo-finale"><div style="font-size:40px">${tit[0]}</div><div class="t">${esc(tit[1])}</div><div>${esc(tit[2])}</div>
       <div class="penitenza">${esc(tot[0] === tot[1] ? "Pareggio: ognuno sceglie una penitenza per l'altro! (tipo fare le lavatrici per un mese per entrambi) 😈" : PENITENZA)}</div></div>`;
   }
-  const ultimo = GIORNI[GIORNI.length - 1];
-  const svelabile = indiceOggi() >= GIORNI.length - 1; // solo dall'ultimo giorno del viaggio
+  const svelabile = svelaAperto();
   const svela = svelabile
     ? `<button class="btn-svela" id="svela">🥁 Svela il vincitore</button>`
-    : `<button class="btn-svela chiuso" id="svela">🔒 Svela il vincitore<small>Si sblocca l'ultimo giorno del viaggio, ${dataBreve(ultimo.data)}</small></button>`;
+    : `<button class="btn-svela chiuso" id="svela">🔒 Svela il vincitore<small>Si sblocca ${testoSvela()}</small></button>`;
   $("#v-sfida").innerHTML = `
     <div class="tabellone">
       <div class="gioc"><div class="corona">${corona(0)}</div><div class="nome">${esc(G)}</div><div class="punti">${tot[0]}</div><div class="oggi-p">oggi +${oggi[0]}</div></div>
@@ -940,7 +950,7 @@ function renderSfida() {
     ${finale}
     ${corpo}
     ${storico}`;
-  $("#svela").onclick = svelabile ? svelaVincitore : () => toast(`Pazienza! Il vincitore si svela l'ultimo giorno del viaggio (${dataBreve(ultimo.data)}) 🐉`);
+  $("#svela").onclick = svelabile ? svelaVincitore : () => toast(`Pazienza! Il vincitore si svela ${testoSvela()} 🐉`);
   const td = $("#test-dopo"); if (td) td.onclick = () => {
     const i = indiceOggi(); S.giornoTest = Math.min((i < 0 ? -1 : i) + 1, GIORNI.length - 1); giornoSelezionato = null; salva(); bannerTest(); renderSfida();
     toast(`Ora è il Giorno ${S.giornoTest + 1}: premete "Comincia la sfida"`);
