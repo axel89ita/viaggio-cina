@@ -76,7 +76,7 @@ const VIAGGIO = {
           indirizzoCn: "Aeroporto di Roma Fiumicino, Terminal 3", lat: 41.8004, lon: 12.2387,
           orario: "18:00", durata: 150, timbro: "出发",
           descrizione: "Volo Air China CA 940 per Pechino, partenza alle 20:30. Il viaggio comincia!",
-          consiglio: "Arrivate 2 ore e mezza prima. Prima di decollare: app scaricata, Amap in inglese e un selfie per il Passaporto.",
+          consiglio: "Arrivate 2 ore e mezza prima. Prima di decollare: Amap installata e messa in inglese.",
         },
       ],
     },
@@ -443,7 +443,7 @@ const VIAGGIO = {
           orario: "07:00", durata: 20, timbro: "森林公园",
           spostamento: { mezzo: "taxi", minuti: 10 },
           descrizione: "La porta d'ingresso al Zhangjiajie National Forest Park dal lato di Wulingyuan.",
-          consiglio: "Conservate il biglietto: si timbra con il passaporto a ogni navetta e ascensore.",
+          consiglio: "Conservate biglietto e passaporto a portata di mano: si mostrano a ogni navetta e ascensore.",
         },
         {
           id: "yuanjiajie", nome: "Yuanjiajie", nomeCn: "袁家界",
@@ -778,7 +778,7 @@ const VIAGGIO = {
     {
       data: "2026-10-31", citta: "Pechino", titolo: "La Grande Muraglia",
       hotel: "pechino",
-      note: "Mutianyu, ingresso alle 08:00 (circa 1h30 di Didi: partite verso le 06:30). Biglietti: ingresso + navetta andata e ritorno + Upward Cableway (cabinovia chiusa fino alla Torre 14) + Downward Slide/Toboggan (dalla Torre 6). Ultima sera in città: stasera dalle 18:00 si sblocca \"Svela il vincitore\"!",
+      note: "Mutianyu, ingresso alle 08:00 (circa 1h30 di Didi: partite verso le 06:30). Biglietti: ingresso + navetta andata e ritorno + Upward Cableway (cabinovia chiusa fino alla Torre 14) + Downward Slide/Toboggan (dalla Torre 6). Ultima sera in città!",
       tappe: [
         {
           id: "mutianyu-centro", nome: "Mutianyu: centro visitatori e navetta", nomeCn: "慕田峪长城游客中心",
