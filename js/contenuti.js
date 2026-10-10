@@ -87,6 +87,9 @@ const MISSIONI = [
   { n: 40, cat: "Sfide di coppia", t: "Inventa un soprannome cinese per l'altro e usalo per tutto il giorno" },
   { n: 41, cat: "Missioni speciali", t: "Mandate una vostra foto ai colleghi: quello con l'outfit più \"cinesizzato\" vince il punto" },
   { n: 42, cat: "Missioni speciali", t: "Mandate un messaggio vocale ai colleghi raccontando come procede il viaggio: il più simpatico vince il punto" },
+  { n: 43, cat: "Sfide di coppia", t: "Asseconda un desiderio del tuo partner senza lamentarti" },
+  { n: 44, cat: "Sfide di coppia", t: "Dai da mangiare al partner usando esclusivamente le bacchette cinesi" },
+  { n: 45, cat: "Lingua e incontri", t: "Star per un giorno: fatti fotografare con dei cinesi che vi chiedono una foto perché siete stranieri (succede spesso!)" },
 ];
 
 const ICONE_CATEGORIA = { "Cibo": "🥟", "Lingua e incontri": "🗣️", "Foto": "📸", "Esplorazione": "🧭", "Sfide di coppia": "💞", "Missioni speciali": "⭐" };
