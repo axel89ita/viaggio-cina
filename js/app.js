@@ -572,7 +572,7 @@ function mostraFesta() {
     <div class="t">Sorpresa sbloccata!</div>
     <div style="text-align:center;opacity:.9;max-width:420px">Un regalo dei vostri colleghi per rendere il viaggio ancora più speciale</div>
     <button class="voce" data-vai-festa="passaporto"><span class="ico">🛂</span><span><b>Passaporto del Dragone</b><br>Fatevi un selfie e collezionate i timbri delle attrazioni</span></button>
-    <button class="voce" data-vai-festa="sfida"><span class="ico">🏆</span><span><b>Sfida Giuseppe vs Flavia</b><br>Ogni giorno 5 missioni, chi fa più punti vince</span></button>
+    <button class="voce" data-vai-festa="sfida"><span class="ico">🏆</span><span><b>Sfida Giuseppe vs Flavia</b><br>Ogni giorno ${CONFIG.MISSIONI_AL_GIORNO} missioni, chi fa più punti vince</span></button>
     <button class="voce" data-vai-festa="frasario"><span class="ico">😂</span><span><b>Frasario segreto</b><br>Nuove frasi "di sopravvivenza" da usare con cautela</span></button>
     <div style="font-size:13px;opacity:.85;margin-top:14px;text-align:center">Non avete sentito niente? Togliete il silenzioso, alzate il volume e premete qui sotto</div>
     <button class="btn oro" id="festa-riascolta" style="margin-top:6px">▶️ Riascolta il messaggio dei colleghi</button>
@@ -836,16 +836,17 @@ function punteggi() {
   const chiave = giornoSfidaChiave();
   let oggi = [0, 0];
   Object.entries(S.sfida.giorni).forEach(([k, g]) => {
+    if (k === "pre" && chiave !== "pre") return; // la prova prima della partenza non conta nel viaggio
     Object.values(g.fatte || {}).forEach(f => { f.forEach((v, i) => { if (v) { tot[i]++; if (k === chiave) oggi[i]++; } }); });
   });
   return { tot, oggi };
 }
-function estraiMissioni() {
+function estraiMissioni(prova) {
   let libere = MISSIONI.map(m => m.n).filter(n => !S.sfida.usate.includes(n));
   if (libere.length < CONFIG.MISSIONI_AL_GIORNO) { S.sfida.usate = []; libere = MISSIONI.map(m => m.n); }
   const scelte = [];
   while (scelte.length < CONFIG.MISSIONI_AL_GIORNO) { const k = Math.floor(Math.random() * libere.length); scelte.push(libere.splice(k, 1)[0]); }
-  S.sfida.usate.push(...scelte);
+  if (!prova) S.sfida.usate.push(...scelte); // le missioni della prova prima della partenza restano disponibili
   return scelte;
 }
 /** "Svela il vincitore": si apre il giorno CONFIG.SVELA.data dall'ora CONFIG.SVELA.ora (l'ultima sera del viaggio) */
@@ -911,7 +912,12 @@ function renderSfida() {
   const corona = (i) => tot[i] > tot[1 - i] ? "👑" : "";
   const etichettaGiorno = chiave === "pre" ? "Prova prima della partenza" : `Giorno ${GIORNI.findIndex(x => x.data === chiave) + 1} · ${dataBreve(chiave)}`;
   let corpo;
-  if (!g) {
+  const senzaSfida = (CONFIG.GIORNI_SENZA_SFIDA || []).includes(chiave);
+  if (!g && senzaSfida) {
+    const primo = chiave === GIORNI[0].data;
+    corpo = `<div class="scheda sfida-vuota"><div class="ico">✈️</div>
+      <p><b>${etichettaGiorno}</b><br>${primo ? "Oggi si vola: niente missioni! La sfida comincia domani, in Cina." : "Oggi si torna a casa: niente missioni. Le sfide sono finite, guardate la classifica qui sopra!"}</p></div>`;
+  } else if (!g) {
     corpo = `<div class="scheda sfida-vuota"><div class="ico">🎲</div>
       <p><b>${etichettaGiorno}</b><br>Pronti per le missioni di oggi?</p>
       <button class="btn rosso pieno" id="comincia">🐉 Comincia la sfida</button></div>`;
@@ -922,7 +928,7 @@ function renderSfida() {
         return `<div class="missione"><div class="cat">${ICONE_CATEGORIA[m.cat]} ${esc(m.cat)}</div><div class="t">${esc(m.t)}</div>
           <div class="spunte">${[G, F].map((nome, i) => `<button class="spunta ${f[i] ? "fatta" : ""}" data-spunta="${n}:${i}">${f[i] ? "✓ " : "○ "}${esc(nome)}</button>`).join("")}</div></div>`;
       }).join("") +
-      `<div class="nota-giorno" style="margin-top:4px">🌅 Domani qui troverete di nuovo il pulsante "Comincia la sfida" per estrarre 5 missioni nuove. Le missioni di oggi resteranno sotto, nei giorni precedenti, con il loro punteggio.</div>`;
+      `<div class="nota-giorno" style="margin-top:4px">🌅 Domani qui troverete di nuovo il pulsante "Comincia la sfida" per estrarre ${CONFIG.MISSIONI_AL_GIORNO} missioni nuove. Le missioni di oggi resteranno sotto, nei giorni precedenti, con il loro punteggio.</div>`;
   }
   if (CONFIG.MODALITA_TEST) corpo += `<button class="btn contorno pieno" id="test-dopo" style="margin-top:10px">🧪 Test: passa al giorno successivo</button>`;
   const passati = Object.entries(S.sfida.giorni).filter(([k]) => k !== chiave).sort(([a], [b]) => a < b ? 1 : -1);
@@ -957,8 +963,8 @@ function renderSfida() {
     toast(`Ora è il Giorno ${S.giornoTest + 1}: premete "Comincia la sfida"`);
   };
   const c = $("#comincia"); if (c) c.onclick = () => {
-    S.sfida.giorni[chiave] = { missioni: estraiMissioni(), fatte: {} }; salva(); renderSfida();
-    toast("5 missioni estratte! Che vinca il migliore 🐉");
+    S.sfida.giorni[chiave] = { missioni: estraiMissioni(chiave === "pre"), fatte: {} }; salva(); renderSfida();
+    toast(`${CONFIG.MISSIONI_AL_GIORNO} missioni estratte! Che vinca il migliore 🐉`);
   };
 }
 document.addEventListener("click", e => {
