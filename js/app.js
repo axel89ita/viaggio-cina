@@ -138,6 +138,7 @@ matchMedia("(orientation: landscape)").addEventListener?.("change", riadatta);
 
 function mostraTassista(luogo) {
   schermoIntero(`
+    ${luogo.battutaTassista ? `<div class="battuta">${esc(luogo.battutaTassista)}</div>` : ""}
     <div class="richiesta">您好！请带我们去这里：</div>
     <div class="grande-cn">${esc(luogo.nomeCn || luogo.nome)}</div>
     ${luogo.indirizzoCn ? `<div class="medio-cn">${esc(luogo.indirizzoCn)}</div>` : ""}

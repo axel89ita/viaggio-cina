@@ -8,6 +8,7 @@
    - durata = minuti di visita stimati
    - spostamento = come si arriva a questa tappa dalla precedente
      (dalla prima: dall'hotel; "da" sostituisce la scritta "dall'hotel")
+   - battutaTassista (facoltativa) = frase in italiano in cima alla schermata "Mostra al tassista"
    - citta (facoltativa) = città della tappa sul timbro, se diversa da quella del giorno
    - timbro = 1-4 caratteri cinesi che compaiono nel timbro del Passaporto
    - ristoranti: daFlavia: true = locale trovato da Flavia → sempre in cima,
@@ -73,7 +74,8 @@ const VIAGGIO = {
       tappe: [
         {
           id: "fiumicino", citta: "Roma", nome: "Aeroporto di Fiumicino, Terminal 3", nomeCn: "罗马菲乌米奇诺机场",
-          indirizzoCn: "Aeroporto di Roma Fiumicino, Terminal 3", lat: 41.8004, lon: 12.2387,
+          indirizzoCn: "罗马菲乌米奇诺机场 3号航站楼", lat: 41.8004, lon: 12.2387,
+          battutaTassista: "Nel caso beccaste un tassista cinese, raro ma non impossibile… ormai sono ovunque! 😄",
           orario: "18:00", durata: 150, timbro: "出发",
           descrizione: "Volo Air China CA 940 per Pechino, partenza alle 20:30. Il viaggio comincia!",
           consiglio: "Arrivate 2 ore e mezza prima. Prima di decollare: Amap installata e messa in inglese.",
