@@ -28,16 +28,16 @@ const FRASARIO = [
   { n: 23, it: "Chiamate un'ambulanza", cn: "请叫救护车", py: "qǐng jiào jiùhùchē" },
 
   // --- Frasario segreto, comico (solo dopo lo sblocco) ---
-  { n: 24, comica: true, it: "Mi scusi, sa indicarmi la sala di acquagym più vicina?", cn: "不好意思，请问最近的水中健身操馆在哪里？", py: "bù hǎo yìsi, qǐngwèn zuìjìn de shuǐzhōng jiànshēncāo guǎn zài nǎlǐ?" },
-  { n: 25, comica: true, it: "Troppo piccante! Domani brucia culetto!", cn: "太辣了！明天屁股要着火了！", py: "tài là le! míngtiān pìgu yào zháohuǒ le!" },
-  { n: 26, comica: true, it: "Ma ti pare? Non pulisco a casa e secondo te mi metto a sistemare qui?", cn: "你开玩笑吧？我在家都不打扫，你觉得我会在这里收拾吗？", py: "nǐ kāi wánxiào ba? wǒ zài jiā dōu bù dǎsǎo, nǐ juéde wǒ huì zài zhèlǐ shōushi ma?" },
-  { n: 27, comica: true, it: "Ma che cinesata!", cn: "什么破玩意儿！", py: "shénme pò wányìr!", nota: "In cinese suona come «che patacca!»" },
-  { n: 28, comica: true, it: "Ho camminato 20.000 passi, lasciatemi stare!", cn: "我走了两万步，别管我！", py: "wǒ zǒu le liǎng wàn bù, bié guǎn wǒ!" },
-  { n: 29, comica: true, it: "Io pLendo Liso fLitto e involtini pLimaveLa", cn: "我要炒饭和春卷", py: "wǒ yào chǎofàn hé chūnjuǎn", nota: "In cinese è una normalissima ordinazione: funziona davvero!" },
-  { n: 30, comica: true, it: "Paga lui/lei", cn: "他/她付钱", py: "tā fù qián" },
-  { n: 31, comica: true, it: "Chissà se i cinesi vengono chiamati Cenesi per sbaglio 😯", cn: "我姓Cenesi，在意大利语里听起来像“中国人”！😯", py: "wǒ xìng Cenesi, zài Yìdàlìyǔ lǐ tīng qǐlái xiàng “Zhōngguó rén”!", nota: "In cinese la battuta è spiegata: «Mi chiamo Cenesi, in italiano sembra “cinesi”!»" },
-  { n: 32, comica: true, it: "Questo <b>SUPER</b> ristorante è <b>SUPER</b> buono e mi sto <b>SUPER</b> divertendo", cn: "这家<b>超级</b>餐厅<b>超级</b>好吃，我玩得<b>超级</b>开心！", py: "zhè jiā chāojí cāntīng chāojí hǎochī, wǒ wán de chāojí kāixīn!" },
-  { n: 33, comica: true, it: "Mi scusi, sa indicarmi il negozio di carte dei Pokémon più vicino?", cn: "打扰一下，请问最近的宝可梦卡牌店在哪里？", py: "dǎrǎo yīxià, qǐngwèn zuìjìn de Bǎokěmèng kǎpái diàn zài nǎlǐ?" },
+  { n: 24, comica: true, it: "Mi scusi, sa indicarmi il negozio di carte dei Pokémon più vicino?", cn: "打扰一下，请问最近的宝可梦卡牌店在哪里？", py: "dǎrǎo yīxià, qǐngwèn zuìjìn de Bǎokěmèng kǎpái diàn zài nǎlǐ?" },
+  { n: 25, comica: true, it: "Mi scusi, sa indicarmi la sala di acquagym più vicina?", cn: "不好意思，请问最近的水中健身操馆在哪里？", py: "bù hǎo yìsi, qǐngwèn zuìjìn de shuǐzhōng jiànshēncāo guǎn zài nǎlǐ?" },
+  { n: 26, comica: true, it: "Troppo piccante! Domani brucia culetto!", cn: "太辣了！明天屁股要着火了！", py: "tài là le! míngtiān pìgu yào zháohuǒ le!" },
+  { n: 27, comica: true, it: "Ma ti pare? Non pulisco a casa e secondo te mi metto a sistemare qui?", cn: "你开玩笑吧？我在家都不打扫，你觉得我会在这里收拾吗？", py: "nǐ kāi wánxiào ba? wǒ zài jiā dōu bù dǎsǎo, nǐ juéde wǒ huì zài zhèlǐ shōushi ma?" },
+  { n: 28, comica: true, it: "Ma che cinesata!", cn: "什么破玩意儿！", py: "shénme pò wányìr!", nota: "In cinese suona come «che patacca!»" },
+  { n: 29, comica: true, it: "Ho camminato 20.000 passi, lasciatemi stare!", cn: "我走了两万步，别管我！", py: "wǒ zǒu le liǎng wàn bù, bié guǎn wǒ!" },
+  { n: 30, comica: true, it: "Io pLendo Liso fLitto e involtini pLimaveLa", cn: "我要炒饭和春卷", py: "wǒ yào chǎofàn hé chūnjuǎn", nota: "In cinese è una normalissima ordinazione: funziona davvero!" },
+  { n: 31, comica: true, it: "Paga lui/lei", cn: "他/她付钱", py: "tā fù qián" },
+  { n: 32, comica: true, it: "Chissà se i cinesi vengono chiamati Cenesi per sbaglio 😯", cn: "我姓Cenesi，在意大利语里听起来像“中国人”！😯", py: "wǒ xìng Cenesi, zài Yìdàlìyǔ lǐ tīng qǐlái xiàng “Zhōngguó rén”!", nota: "In cinese la battuta è spiegata: «Mi chiamo Cenesi, in italiano sembra “cinesi”!»" },
+  { n: 33, comica: true, it: "Questo <b>SUPER</b> ristorante è <b>SUPER</b> buono e mi sto <b>SUPER</b> divertendo", cn: "这家<b>超级</b>餐厅<b>超级</b>好吃，我玩得<b>超级</b>开心！", py: "zhè jiā chāojí cāntīng chāojí hǎochī, wǒ wán de chāojí kāixīn!" },
 ];
 
 const MISSIONI = [
