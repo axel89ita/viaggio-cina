@@ -37,6 +37,7 @@ const FRASARIO = [
   { n: 30, comica: true, it: "Paga lui/lei", cn: "他/她付钱", py: "tā fù qián" },
   { n: 31, comica: true, it: "Chissà se i cinesi vengono chiamati Cenesi per sbaglio 😯", cn: "我姓Cenesi，在意大利语里听起来像“中国人”！😯", py: "wǒ xìng Cenesi, zài Yìdàlìyǔ lǐ tīng qǐlái xiàng “Zhōngguó rén”!", nota: "In cinese la battuta è spiegata: «Mi chiamo Cenesi, in italiano sembra “cinesi”!»" },
   { n: 32, comica: true, it: "Questo <b>SUPER</b> ristorante è <b>SUPER</b> buono e mi sto <b>SUPER</b> divertendo", cn: "这家<b>超级</b>餐厅<b>超级</b>好吃，我玩得<b>超级</b>开心！", py: "zhè jiā chāojí cāntīng chāojí hǎochī, wǒ wán de chāojí kāixīn!" },
+  { n: 33, comica: true, it: "Mi scusi, sa indicarmi il negozio di carte dei Pokémon più vicino?", cn: "打扰一下，请问最近的宝可梦卡牌店在哪里？", py: "dǎrǎo yīxià, qǐngwèn zuìjìn de Bǎokěmèng kǎpái diàn zài nǎlǐ?" },
 ];
 
 const MISSIONI = [
