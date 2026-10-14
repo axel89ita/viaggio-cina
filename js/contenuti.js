@@ -77,7 +77,7 @@ const MISSIONI = [
   { n: 29, cat: "Esplorazione", t: "Entra in un negozio di cui non capisci assolutamente cosa venda" },
   { n: 30, cat: "Esplorazione", t: "Compra un souvenir sotto i 10 yuan" },
   { n: 31, cat: "Esplorazione", t: "Contratta il prezzo di qualcosa al mercato e ottieni uno sconto" },
-  { n: 32, cat: "Esplorazione", t: "Paga qualcosa con il telefono (Alipay o WeChat Pay)" },
+  { n: 32, cat: "Lingua e incontri", t: "Insegna a un cinese a dire in italiano \"Forza Lazio, prima squadra della capitale!\" e invia un vocale a Federico come prova" },
   { n: 33, cat: "Esplorazione", t: "Trova il punto più alto della giornata, che sia una torre, una collina o un piano" },
   { n: 34, cat: "Esplorazione", t: "Cammina almeno 15.000 passi (fa fede il contapassi dell'iPhone)" },
   // Sfide di coppia
