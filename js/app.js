@@ -841,11 +841,16 @@ function punteggi() {
   });
   return { tot, oggi };
 }
-function estraiMissioni(prova) {
-  let libere = MISSIONI.map(m => m.n).filter(n => !S.sfida.usate.includes(n));
-  if (libere.length < CONFIG.MISSIONI_AL_GIORNO) { S.sfida.usate = []; libere = MISSIONI.map(m => m.n); }
-  const scelte = [];
-  while (scelte.length < CONFIG.MISSIONI_AL_GIORNO) { const k = Math.floor(Math.random() * libere.length); scelte.push(libere.splice(k, 1)[0]); }
+function estraiMissioni(prova, giorno) {
+  // Missioni con `data`: escono solo quel giorno, e quel giorno escono sicuramente (es. la Grande Muraglia)
+  const fisse = prova ? [] : MISSIONI.filter(m => m.data === giorno).map(m => m.n).slice(0, CONFIG.MISSIONI_AL_GIORNO);
+  const estraibili = MISSIONI.filter(m => !m.data).map(m => m.n);
+  let libere = estraibili.filter(n => !S.sfida.usate.includes(n));
+  const servono = CONFIG.MISSIONI_AL_GIORNO - fisse.length;
+  if (libere.length < servono) { S.sfida.usate = S.sfida.usate.filter(n => !estraibili.includes(n)); libere = estraibili.slice(); }
+  const scelte = [...fisse];
+  while (scelte.length < CONFIG.MISSIONI_AL_GIORNO && libere.length) { const k = Math.floor(Math.random() * libere.length); scelte.push(libere.splice(k, 1)[0]); }
+  for (let i = scelte.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [scelte[i], scelte[j]] = [scelte[j], scelte[i]]; }
   if (!prova) S.sfida.usate.push(...scelte); // le missioni della prova prima della partenza restano disponibili
   return scelte;
 }
@@ -963,7 +968,7 @@ function renderSfida() {
     toast(`Ora è il Giorno ${S.giornoTest + 1}: premete "Comincia la sfida"`);
   };
   const c = $("#comincia"); if (c) c.onclick = () => {
-    S.sfida.giorni[chiave] = { missioni: estraiMissioni(chiave === "pre"), fatte: {} }; salva(); renderSfida();
+    S.sfida.giorni[chiave] = { missioni: estraiMissioni(chiave === "pre", chiave), fatte: {} }; salva(); renderSfida();
     toast(`${CONFIG.MISSIONI_AL_GIORNO} missioni estratte! Che vinca il migliore 🐉`);
   };
 }
