@@ -47,7 +47,7 @@ const MISSIONI = [
   { n: 2,  cat: "Cibo", t: "Mangia un intero pasto usando solo le bacchette, compresi riso e zuppa" },
   { n: 3,  cat: "Cibo", t: "Ordina indicando una foto a caso sul menu, senza sapere cos'è" },
   { n: 4,  cat: "Cibo", t: "Prova un dolce cinese mai visto prima" },
-  { n: 5,  cat: "Cibo", t: "Bevi un tè al latte con le \"perle\" (bubble tea)" },
+  { n: 5,  cat: "Esplorazione", t: "Canta la canzone di Mulan mentre saltelli lungo la Grande Muraglia" },
   { n: 6,  cat: "Cibo", t: "Assaggia qualcosa di piccante e resisti 10 secondi senza bere" },
   { n: 7,  cat: "Cibo", t: "Mangia un piatto di street food comprato per strada" },
   { n: 8,  cat: "Cibo", t: "Prova un frutto che in Italia non hai mai visto" },
